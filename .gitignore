@@ -1,0 +1,8 @@
+# build output + machine-local config
+build/
+.gradle/
+local.properties
+
+# signing material — stays on the server, never in git
+keystore/
+*.apk

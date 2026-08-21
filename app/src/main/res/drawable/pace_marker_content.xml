@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A constant-size (2dp x 12dp) marker pinned to the RIGHT edge of whatever
+     box the enclosing <scale> drawable gives this layer-list. The box's own
+     width is what varies with level; this item's own size never does. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="2dp"
+        android:height="12dp"
+        android:gravity="end|center_vertical"
+        android:drawable="@drawable/pace_marker" />
+</layer-list>
