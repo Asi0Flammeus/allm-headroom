@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Classic Android level-driven pointer: <scale> grows a box from the left
+     edge to `level`/10000 of the ImageView's own width (RemoteViews.setInt(id,
+     "setImageLevel", pace*100)); pace_marker_content pins a constant-width tick
+     to that box's right edge, so the tick's SCREEN position tracks level while
+     its own width never changes. No API version dependency, no pixel math. -->
+<scale xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/pace_marker_content"
+    android:scaleGravity="left|fill_vertical"
+    android:scaleWidth="100%" />

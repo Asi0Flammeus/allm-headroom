@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp">
+
+    <TextView
+        android:id="@+id/row_window"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="#9CA3AF"
+        android:maxLines="1" />
+
+    <!-- One bar per headroom band (RemoteViews cannot retint a ProgressBar on
+         older APIs); the renderer shows exactly one, or none for no-data rows. -->
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <ProgressBar
+            android:id="@+id/row_bar_ok"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progressTint="#4ADE80"
+            android:progressBackgroundTint="#374151" />
+
+        <ProgressBar
+            android:id="@+id/row_bar_warn"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progressTint="#FBBF24"
+            android:progressBackgroundTint="#374151"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/row_bar_orange"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progressTint="#EA6E20"
+            android:progressBackgroundTint="#374151"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/row_bar_low"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progressTint="#F87171"
+            android:progressBackgroundTint="#374151"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/row_bar_critical"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:max="100"
+            android:progressTint="#B92525"
+            android:progressBackgroundTint="#374151"
+            android:visibility="gone" />
+
+        <!-- Linear-pace marker: where remaining% would sit right now if usage
+             were spent evenly across the window. Position is driven purely by
+             image level (setImageLevel, 0-10000) via pace_marker_scale; hidden
+             for no-data rows or windows with no known length. -->
+        <ImageView
+            android:id="@+id/row_pace_marker"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:layout_gravity="center_vertical"
+            android:scaleType="fitXY"
+            android:src="@drawable/pace_marker_scale"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/row_percent"
+        android:layout_width="46dp"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="#F3F4F6"
+        android:gravity="end"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/row_reset"
+        android:layout_width="86dp"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:textColor="#9CA3AF"
+        android:gravity="end"
+        android:maxLines="1" />
+</LinearLayout>
