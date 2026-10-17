@@ -30,12 +30,25 @@ data class WidgetModel(
     val rows: List<Row>,
 )
 
+/** Background refresh cadence choices and the staleness they imply. */
+object Refresh {
+    /** 15 min is WorkManager's periodic floor. */
+    val CHOICES_MIN = listOf(15, 30, 60, 180)
+    const val DEFAULT_MIN = 15
+
+    fun coerce(minutes: Int): Int = if (minutes in CHOICES_MIN) minutes else DEFAULT_MIN
+
+    /** The widget's own data counts as stale once two scheduled refreshes in a row were missed. */
+    fun staleAfterMs(minutes: Int): Long = 3L * coerce(minutes) * 60_000L
+}
+
 object DisplayState {
 
-    /** Local staleness: how old the widget's OWN last successful fetch may get. */
-    const val WIDGET_STALE_AFTER_MS: Long = 45 * 60 * 1000L
+    /** Local staleness at the default cadence: how old the widget's OWN last successful fetch may get. */
+    val WIDGET_STALE_AFTER_MS: Long = Refresh.staleAfterMs(Refresh.DEFAULT_MIN)
 
-    private val PROVIDERS = listOf("anthropic", "openai")
+    /** Provider keys in display order. */
+    val PROVIDERS = listOf("anthropic", "openai")
     private val TIME = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
     private val DAY_TIME = DateTimeFormatter.ofPattern("EEE HH:mm", Locale.ENGLISH)
 
@@ -68,6 +81,7 @@ object DisplayState {
         lastSuccessAtMs: Long,
         lastError: String?,
         staleAfterMs: Long = WIDGET_STALE_AFTER_MS,
+        hidden: Set<String> = emptySet(),
     ): WidgetModel {
         val freshness = computeFreshness(
             nowMs, configured, parsed != null, lastSuccessAtMs,
@@ -78,26 +92,36 @@ object DisplayState {
             Freshness.UNCONFIGURED -> "tap \u2699 to configure"
             Freshness.NO_DATA -> lastError?.let { "no data \u00b7 $it" } ?: "no data yet"
             Freshness.ERROR -> "offline \u00b7 data from $asOf"
-            Freshness.STALE -> "stale \u00b7 data from $asOf"
+            Freshness.STALE -> staleSinceText(parsed?.staleSince, zone) ?: "stale \u00b7 data from $asOf"
             Freshness.FRESH -> "updated $asOf"
         }
-        return WidgetModel(freshness, status, parsed?.let { buildRows(it, nowMs, zone) } ?: emptyList())
+        return WidgetModel(freshness, status, parsed?.let { buildRows(it, nowMs, zone, hidden) } ?: emptyList())
+    }
+
+    /** "stale since 12:25" from the server's `stale_since`, when it sent one. */
+    fun staleSinceText(staleSince: String?, zone: ZoneId): String? = try {
+        staleSince?.let { "stale since ${formatClock(OffsetDateTime.parse(it).toInstant().toEpochMilli(), zone)}" }
+    } catch (_: Exception) {
+        null
     }
 
     /**
      * One row per bridge window, in bridge order. Unavailable windows keep their
      * identity (label, falling back to id) as explicit no-data rows instead of
      * being dropped; a provider with no windows at all gets one placeholder row.
+     * [hidden] holds provider keys ("openai") and window keys ([windowKey]) the
+     * user chose not to show; they produce no rows at all.
      */
-    fun buildRows(parsed: UsageResponse, nowMs: Long, zone: ZoneId): List<Row> {
+    fun buildRows(parsed: UsageResponse, nowMs: Long, zone: ZoneId, hidden: Set<String> = emptySet()): List<Row> {
         val rows = mutableListOf<Row>()
         for (key in PROVIDERS) {
-            val windows = parsed.providers[key]?.windows.orEmpty()
-            if (windows.isEmpty()) {
+            if (key in hidden) continue
+            val all = parsed.providers[key]?.windows.orEmpty()
+            if (all.isEmpty()) {
                 rows.add(Row(key, true, "", null, null, "no data"))
                 continue
             }
-            windows.forEachIndexed { i, w ->
+            all.filterNot { windowKey(key, it.id) in hidden }.forEachIndexed { i, w ->
                 val pct = if (w.available) w.remainingPercent else null
                 rows.add(
                     Row(
@@ -112,6 +136,21 @@ object DisplayState {
             }
         }
         return rows
+    }
+
+    /** Settings/visibility key of one provider window, e.g. "anthropic/5h". */
+    fun windowKey(provider: String, windowId: String): String = "$provider/$windowId"
+
+    /** "just now" / "4 min ago" / "2 h ago" / "3 d ago"; "never" for a zero timestamp. */
+    fun ageText(nowMs: Long, thenMs: Long): String {
+        if (thenMs <= 0L) return "never"
+        val min = (nowMs - thenMs).coerceAtLeast(0L) / 60_000L
+        return when {
+            min < 1 -> "just now"
+            min < 60 -> "$min min ago"
+            min < 48 * 60 -> "${min / 60} h ago"
+            else -> "${min / (24 * 60)} d ago"
+        }
     }
 
     private fun shortLabel(label: String): String = if (label == "week") "wk" else label

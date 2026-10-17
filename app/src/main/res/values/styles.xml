@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- No framework action bar: at targetSdk 35+ edge-to-edge is enforced and the
+         action bar overlapped the first fields (0.2.x: the URL field sat under it
+         and could not be tapped). The screen draws its own header and pads for
+         system bars in ConfigActivity.applyInsets. -->
+    <style name="Settings" parent="@android:style/Theme.DeviceDefault.DayNight">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/hr_bg</item>
+        <item name="android:colorAccent">@color/hr_accent</item>
+        <item name="android:textColorPrimary">@color/hr_ink</item>
+        <item name="android:textColorSecondary">@color/hr_muted</item>
+    </style>
+
+    <style name="Settings.Section">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingTop">20dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/hr_accent</item>
+    </style>
+
+    <style name="Settings.Card">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/settings_card</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="Settings.Label">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/hr_body</item>
+    </style>
+
+    <style name="Settings.Help">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/hr_muted</item>
+        <item name="android:paddingTop">8dp</item>
+    </style>
+</resources>

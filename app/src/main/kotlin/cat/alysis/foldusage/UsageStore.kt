@@ -8,18 +8,23 @@ import java.time.Instant
 import java.time.ZoneOffset
 
 /**
- * App-private persistence: pairing config (base URL + bearer token) and the
- * last fetch outcome. The token never leaves this app-private file; it grants
- * read-only usage percentages over a tailnet-only listener.
+ * App-private persistence: pairing config (base URL + bearer token), display
+ * settings, and the last fetch outcome. The token never leaves this app-private
+ * file; it grants read-only usage percentages over a tailnet-only listener.
  */
 class UsageStore(context: Context) {
 
     private val prefs: SharedPreferences =
         context.applicationContext.getSharedPreferences("usage", Context.MODE_PRIVATE)
 
+    init {
+        // Installs paired with a retired bridge host rehome themselves on first use.
+        Endpoint.migrated(baseUrl)?.let { prefs.edit().putString(KEY_URL, it).apply() }
+    }
+
     var baseUrl: String
         get() = prefs.getString(KEY_URL, "") ?: ""
-        set(value) = prefs.edit().putString(KEY_URL, value.trimEnd('/')).apply()
+        set(value) = prefs.edit().putString(KEY_URL, Endpoint.normalize(value)).apply()
 
     var token: String
         get() = prefs.getString(KEY_TOKEN, "") ?: ""
@@ -27,6 +32,26 @@ class UsageStore(context: Context) {
 
     val isConfigured: Boolean
         get() = baseUrl.isNotBlank() && token.isNotBlank()
+
+    /** Background refresh cadence, one of [Refresh.CHOICES_MIN]. */
+    var refreshMinutes: Int
+        get() = Refresh.coerce(prefs.getInt(KEY_REFRESH_MIN, Refresh.DEFAULT_MIN))
+        set(value) = prefs.edit().putInt(KEY_REFRESH_MIN, Refresh.coerce(value)).apply()
+
+    /** Provider keys ("openai") and window keys ("anthropic/5h") the user hid from the widget. */
+    var hidden: Set<String>
+        get() = prefs.getStringSet(KEY_HIDDEN, emptySet())?.toSet() ?: emptySet()
+        set(value) = prefs.edit().putStringSet(KEY_HIDDEN, value.toSet()).apply()
+
+    /** When the last fetch attempt finished, success or not; 0 if never. */
+    val lastAttemptAtMs: Long
+        get() = prefs.getLong(KEY_ATTEMPT_AT, 0L)
+
+    fun registerListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+
+    fun unregisterListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
 
     /** Raw JSON body of the last 200 response that parsed cleanly; null if never. */
     val lastBody: String?
@@ -43,13 +68,14 @@ class UsageStore(context: Context) {
         prefs.edit()
             .putString(KEY_BODY, body)
             .putLong(KEY_SUCCESS_AT, atMs)
+            .putLong(KEY_ATTEMPT_AT, atMs)
             .remove(KEY_ERROR)
             .apply()
         recordCapacitySnapshot(body, atMs)
     }
 
-    fun saveError(message: String) {
-        prefs.edit().putString(KEY_ERROR, message).apply()
+    fun saveError(message: String, atMs: Long) {
+        prefs.edit().putString(KEY_ERROR, message).putLong(KEY_ATTEMPT_AT, atMs).apply()
     }
 
     /** One local daily capacity observation per provider/window, kept for 30 days.
@@ -78,6 +104,9 @@ class UsageStore(context: Context) {
         const val KEY_SUCCESS_AT = "last_success_at"
         const val KEY_ERROR = "last_error"
         const val KEY_HISTORY = "capacity_history"
+        const val KEY_ATTEMPT_AT = "last_attempt_at"
+        const val KEY_REFRESH_MIN = "refresh_minutes"
+        const val KEY_HIDDEN = "hidden"
     }
 }
 

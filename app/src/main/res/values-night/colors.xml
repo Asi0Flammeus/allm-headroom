@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings palette, dark theme. -->
+<resources>
+    <color name="hr_bg">#101311</color>
+    <color name="hr_card">#1A1F1C</color>
+    <color name="hr_line">#2B322E</color>
+    <color name="hr_ink">#EEF2EF</color>
+    <color name="hr_body">#C9D2CD</color>
+    <color name="hr_muted">#8E9993</color>
+    <color name="hr_accent">#6FD3A0</color>
+    <color name="hr_ok">#6FD3A0</color>
+    <color name="hr_warn">#F2B45C</color>
+    <color name="hr_bad">#F2877F</color>
+</resources>

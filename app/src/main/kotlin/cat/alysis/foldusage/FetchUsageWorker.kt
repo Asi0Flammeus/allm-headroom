@@ -10,13 +10,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import org.json.JSONObject
 import java.time.Duration
 
 /**
  * Fetches /usage from the paired bridge, persists the outcome, re-renders all
- * widget instances. Always returns success: the 15-minute periodic tick is the
- * retry; explicit error state is the user-visible signal.
+ * widget instances. Always returns success: the periodic tick (user-chosen
+ * cadence, 15 min by default) is the retry; explicit error state is the
+ * user-visible signal.
  */
 class FetchUsageWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
@@ -32,22 +32,14 @@ class FetchUsageWorker(context: Context, params: WorkerParameters) : Worker(cont
     private fun fetchInto(store: UsageStore) {
         try {
             val resp = Http.get("${store.baseUrl}/usage", store.token)
-            when {
-                resp.code == 200 -> {
-                    parseUsage(resp.body) // reject bodies the renderer can't use
-                    store.saveSuccess(resp.body, System.currentTimeMillis())
-                }
-                else -> {
-                    val detail = try {
-                        JSONObject(resp.body).optString("error").takeIf { it.isNotBlank() }
-                    } catch (_: Exception) {
-                        null
-                    }
-                    store.saveError("HTTP ${resp.code}" + (detail?.let { " \u00b7 $it" } ?: ""))
-                }
+            if (resp.code == 200) {
+                parseUsage(resp.body) // reject bodies the renderer can't use
+                store.saveSuccess(resp.body, System.currentTimeMillis())
+            } else {
+                store.saveError(Http.describeStatus(resp.code, resp.body), System.currentTimeMillis())
             }
         } catch (e: Exception) {
-            store.saveError(Http.describeFailure(e))
+            store.saveError(Http.describeFailure(e), System.currentTimeMillis())
         }
     }
 
@@ -55,13 +47,14 @@ class FetchUsageWorker(context: Context, params: WorkerParameters) : Worker(cont
         private const val PERIODIC = "usage-periodic"
         private const val NOW = "usage-now"
 
-        /** Refresh cadence: WorkManager periodic minimum, 15 minutes, network-gated. */
-        fun schedulePeriodic(context: Context) {
-            val request = PeriodicWorkRequestBuilder<FetchUsageWorker>(Duration.ofMinutes(15))
+        /** Periodic fetch at the user's cadence (WorkManager floor: 15 min), network-gated. */
+        fun schedulePeriodic(context: Context, policy: ExistingPeriodicWorkPolicy = ExistingPeriodicWorkPolicy.KEEP) {
+            val minutes = UsageStore(context).refreshMinutes.toLong()
+            val request = PeriodicWorkRequestBuilder<FetchUsageWorker>(Duration.ofMinutes(minutes))
                 .setConstraints(networkConstraints())
                 .build()
             WorkManager.getInstance(context)
-                .enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP, request)
+                .enqueueUniquePeriodicWork(PERIODIC, policy, request)
         }
 
         fun refreshNow(context: Context) {

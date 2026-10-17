@@ -128,6 +128,14 @@ class DisplayStateTest {
     }
 
     @Test
+    fun `stale path names when the server data froze`() {
+        val parsed = freshParsed(stale = true).copy(staleSince = "2026-08-18T22:25:17Z")
+        val m = DisplayState.buildModel(now, zone, true, parsed, now - 5 * 60_000, null)
+        assertEquals(Freshness.STALE, m.freshness)
+        assertEquals("stale since 22:25", m.statusLine)
+    }
+
+    @Test
     fun `error path keeps cached values and reports offline`() {
         val m = DisplayState.buildModel(now, zone, true, freshParsed(), now - 5 * 60_000, "unreachable")
         assertEquals(Freshness.ERROR, m.freshness)
@@ -179,6 +187,27 @@ class DisplayStateTest {
             {"id": "weekly", "label": "", "available": false}]}}}"""
         val rows = DisplayState.buildRows(parseUsage(body), now, zone)
         assertEquals(Row("openai", true, "weekly", null, null, "no data"), rows[1])
+    }
+
+    @Test
+    fun `hidden provider and hidden window produce no rows`() {
+        val rows = DisplayState.buildRows(freshParsed(), now, zone, setOf("openai", "anthropic/weekly_scoped_0"))
+        assertEquals(listOf("5h", "wk"), rows.map { it.window })
+        assertTrue(rows.all { it.provider == "anthropic" })
+        assertTrue(rows.first().leader)
+    }
+
+    @Test
+    fun `hiding a provider's first window moves the leader mark to the next one`() {
+        val rows = DisplayState.buildRows(freshParsed(), now, zone, setOf("anthropic/5h"))
+        assertEquals(listOf("wk", "Fable wk", "5h", "wk"), rows.map { it.window })
+        assertEquals(listOf(true, false, true, false), rows.map { it.leader })
+    }
+
+    @Test
+    fun `widget model applies the hidden set`() {
+        val m = DisplayState.buildModel(now, zone, true, freshParsed(), now - 60_000, null, hidden = setOf("openai"))
+        assertEquals(3, m.rows.size)
     }
 
     @Test

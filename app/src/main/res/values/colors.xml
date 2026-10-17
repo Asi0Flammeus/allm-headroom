@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings palette: the Headroom app's paper/ink tones (HeadroomActivity), light theme. -->
+<resources>
+    <color name="hr_bg">#FAF8F3</color>
+    <color name="hr_card">#FFFFFF</color>
+    <color name="hr_line">#E4DFD4</color>
+    <color name="hr_ink">#16201C</color>
+    <color name="hr_body">#33413B</color>
+    <color name="hr_muted">#59655F</color>
+    <color name="hr_accent">#166441</color>
+    <color name="hr_ok">#166441</color>
+    <color name="hr_warn">#8E4C00</color>
+    <color name="hr_bad">#A42D26</color>
+</resources>
