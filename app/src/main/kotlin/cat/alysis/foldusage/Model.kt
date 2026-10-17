@@ -20,6 +20,7 @@ data class UsageResponse(
     val stale: Boolean,
     val fetchError: String?,
     val providers: Map<String, ProviderUsage>,
+    val staleSince: String? = null, // ISO-8601Z: when the server's numbers stopped being current
 )
 
 private fun JSONObject.intOrNull(key: String): Int? =
@@ -59,5 +60,6 @@ fun parseUsage(body: String): UsageResponse {
         stale = o.optBoolean("stale", false),
         fetchError = o.strOrNull("fetch_error"),
         providers = providers,
+        staleSince = o.strOrNull("stale_since"),
     )
 }

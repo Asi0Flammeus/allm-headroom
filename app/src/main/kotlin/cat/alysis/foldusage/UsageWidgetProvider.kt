@@ -34,13 +34,24 @@ class UsageWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
-        if (intent.action == ACTION_REFRESH) {
-            FetchUsageWorker.refreshNow(context)
-        } else if (intent.action == ACTION_PACE_TICK) {
+        when (intent.action) {
+            ACTION_REFRESH -> FetchUsageWorker.refreshNow(context)
             // The expected pace is clock-derived, not network-derived. Repaint it
             // independently so the marker progresses between relay fetches.
-            WidgetRenderer.updateAll(context)
-            schedulePaceTick(context)
+            ACTION_PACE_TICK -> {
+                WidgetRenderer.updateAll(context)
+                schedulePaceTick(context)
+            }
+            // An APK update must heal a widget paired with a retired bridge host
+            // without the user opening the app: UsageStore migrates the saved URL
+            // on construction, then fetch from the new host right away.
+            Intent.ACTION_MY_PACKAGE_REPLACED -> {
+                UsageStore(context)
+                FetchUsageWorker.schedulePeriodic(context)
+                FetchUsageWorker.refreshNow(context)
+                schedulePaceTick(context)
+                WidgetRenderer.updateAll(context)
+            }
         }
     }
 

@@ -6,17 +6,43 @@
     <string name="gear">\u2699</string>
     <string name="status_placeholder">loading\u2026</string>
 
-    <string name="config_title">ALLM Headroom \u2014 private relay</string>
+    <string name="settings_subtitle">Settings \u00b7 private relay</string>
+
+    <string name="section_connection">Connection</string>
     <string name="label_url">Bridge URL</string>
-    <string name="hint_url">https://crqpt-server.tail58339.ts.net:8377</string>
+    <string name="hint_url">https://maia-server.tail58339.ts.net:8377</string>
+    <string name="btn_paste">Paste</string>
+    <string name="btn_default_url">Use default</string>
+    <string name="btn_clear">Clear</string>
     <string name="label_token">Bearer token</string>
     <string name="hint_token">paste the bridge token</string>
+    <string name="btn_show">Show</string>
+    <string name="btn_hide">Hide</string>
     <string name="btn_test">Test</string>
     <string name="btn_save">Save</string>
-    <string name="btn_pin">Add widget to home screen</string>
-    <string name="test_running">testing\u2026</string>
-    <string name="save_incomplete">URL and token are both required</string>
+    <string name="clipboard_empty">Clipboard has no text</string>
+    <string name="token_required">token is required</string>
     <string name="saved">Saved \u2014 refreshing</string>
+
+    <string name="section_refresh">Refresh</string>
+    <string name="label_refresh">Fetch in the background every</string>
+    <string name="refresh_15">15 min</string>
+    <string name="refresh_30">30 min</string>
+    <string name="refresh_60">1 h</string>
+    <string name="refresh_180">3 h</string>
+    <string name="refresh_help">Android may postpone background fetches under battery saver. Data counts as stale after two missed fetches.</string>
+    <string name="btn_refresh_now">Refresh now</string>
+    <string name="not_paired">Save a URL and token first</string>
+
+    <string name="section_display">Shown on widget</string>
+    <string name="display_no_windows">Individual windows appear here after the first successful fetch.</string>
+
+    <string name="section_status">Status</string>
+    <string name="section_preview">Widget preview</string>
+    <string name="preview_help">Rendered by the same code as the home-screen widget, from the same stored data.</string>
+
+    <string name="section_home">Home screen</string>
+    <string name="btn_pin">Add widget to home screen</string>
     <string name="pin_unsupported">This launcher does not support pinning; add the widget from the home-screen widget picker.</string>
     <string name="config_help">This private relay exposes only your AI capacity signals. The endpoint is tailnet-only: Tailscale must be connected on this phone. The home-screen panel opens Headroom; its pace line continues to advance between data refreshes.</string>
 </resources>

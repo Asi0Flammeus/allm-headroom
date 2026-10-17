@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Editable settings: connection, refresh cadence, what the widget shows, pinning.
+     Included by both window-size layouts of activity_config. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="24dp">
+
+    <TextView style="@style/Settings.Section" android:text="@string/section_connection" />
+
+    <LinearLayout style="@style/Settings.Card">
+
+        <TextView style="@style/Settings.Label" android:text="@string/label_url" />
+
+        <EditText
+            android:id="@+id/field_url"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:hint="@string/hint_url"
+            android:importantForAutofill="no"
+            android:imeOptions="actionNext"
+            android:inputType="textUri"
+            android:singleLine="true"
+            android:textSize="15sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_paste"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_paste"
+                android:textColor="@color/hr_accent" />
+
+            <Button
+                android:id="@+id/btn_default_url"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_default_url"
+                android:textColor="@color/hr_accent" />
+
+            <Button
+                android:id="@+id/btn_clear_url"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_clear"
+                android:textColor="@color/hr_accent" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/Settings.Label"
+            android:paddingTop="8dp"
+            android:text="@string/label_token" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/field_token"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:minHeight="48dp"
+                android:fontFamily="monospace"
+                android:hint="@string/hint_token"
+                android:importantForAutofill="no"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword|textNoSuggestions"
+                android:singleLine="true"
+                android:textSize="14sp" />
+
+            <Button
+                android:id="@+id/btn_token_visibility"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="72dp"
+                android:text="@string/btn_show"
+                android:textColor="@color/hr_accent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12dp">
+
+            <Button
+                android:id="@+id/btn_test"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_test" />
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:backgroundTint="@color/hr_accent"
+                android:text="@string/btn_save"
+                android:textColor="@color/hr_card" />
+        </LinearLayout>
+
+        <!-- Test outcome: icon + headline + the concrete reason. -->
+        <LinearLayout
+            android:id="@+id/test_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="12dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/test_icon"
+                android:layout_width="28dp"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/test_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/test_detail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/hr_body"
+                    android:textIsSelectable="true"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Refresh -->
+    <TextView style="@style/Settings.Section" android:text="@string/section_refresh" />
+
+    <LinearLayout style="@style/Settings.Card">
+
+        <TextView style="@style/Settings.Label" android:text="@string/label_refresh" />
+
+        <RadioGroup
+            android:id="@+id/refresh_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/refresh_15"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/refresh_15" />
+
+            <RadioButton
+                android:id="@+id/refresh_30"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/refresh_30" />
+
+            <RadioButton
+                android:id="@+id/refresh_60"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/refresh_60" />
+
+            <RadioButton
+                android:id="@+id/refresh_180"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/refresh_180" />
+        </RadioGroup>
+
+        <TextView style="@style/Settings.Help" android:text="@string/refresh_help" />
+
+        <Button
+            android:id="@+id/btn_refresh_now"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_refresh_now"
+            android:textColor="@color/hr_accent" />
+    </LinearLayout>
+
+    <!-- Providers and windows -->
+    <TextView style="@style/Settings.Section" android:text="@string/section_display" />
+
+    <LinearLayout
+        android:id="@+id/display_toggles"
+        style="@style/Settings.Card" />
+
+    <!-- Home screen -->
+    <TextView style="@style/Settings.Section" android:text="@string/section_home" />
+
+    <LinearLayout style="@style/Settings.Card">
+
+        <Button
+            android:id="@+id/btn_pin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_pin" />
+
+        <TextView style="@style/Settings.Help" android:text="@string/config_help" />
+    </LinearLayout>
+</LinearLayout>

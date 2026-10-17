@@ -42,6 +42,8 @@ object WidgetRenderer {
             parsed = parsed,
             lastSuccessAtMs = store.lastSuccessAtMs,
             lastError = store.lastError,
+            staleAfterMs = Refresh.staleAfterMs(store.refreshMinutes),
+            hidden = store.hidden,
         )
 
         val root = RemoteViews(context.packageName, R.layout.widget_usage)

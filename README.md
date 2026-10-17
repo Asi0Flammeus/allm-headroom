@@ -5,7 +5,7 @@ panel shows remaining Claude (Anthropic) and Codex (OpenAI) subscription
 headroom, reset horizons, and a live pace line. Tapping the panel opens the
 Headroom app, with current capacity and locally retained capacity history.
 
-It is fed by `agent-sub-usage` on crqpt-server through a read-only authenticated
+It is fed by `agent-sub-usage` on maia-server through a read-only authenticated
 tailnet bridge. No provider credentials,
 OAuth tokens, or server secrets ever reach the phone: the APK ships with no
 baked-in secrets, and the bridge response carries only percentages and reset
@@ -15,14 +15,14 @@ times.
 agent-sub-usage (server, OAuth creds stay here)
   └─ sub-usage-bridge  127.0.0.1:8378   ~/.ghost/services/sub-usage-bridge/server.py
        └─ tailscale serve (WireGuard, tailnet-only, real TLS cert)
-            └─ https://crqpt-server.tail58339.ts.net:8377/usage  + Bearer token
-                 └─ widget (WorkManager, 15-min refresh + tap-to-refresh)
+            └─ https://maia-server.tail58339.ts.net:8377/usage  + Bearer token
+                 └─ widget (WorkManager, 15 min–3 h refresh set in Settings)
 ```
 
 ## Security boundary
 
 - **Transport**: `tailscale serve` — listener exists only on the tailnet
-  (WireGuard); a valid Let's Encrypt cert for `crqpt-server.tail58339.ts.net`
+  (WireGuard); a valid Let's Encrypt cert for `maia-server.tail58339.ts.net`
   terminates TLS. Nothing is exposed on public interfaces; the bridge itself
   binds `127.0.0.1:8378`.
 - **AuthN**: static bearer token (`~/.ghost/services/sub-usage-bridge/token`,
@@ -32,8 +32,8 @@ agent-sub-usage (server, OAuth creds stay here)
   never mutates anything. Response fields: per provider/window
   `remaining_percent`, `used_percent`, `resets_at`, `seconds_until_reset`,
   `available` + freshness metadata. Nothing else.
-- `/apk` on the same port serves the APK itself (no secrets inside) so any
-  tailnet device can download and install it.
+- The APK carries no secrets; it is published at
+  `https://static.crqpt.com/apks/allm-headroom-<version>.apk`.
 
 ## Freshness semantics (both sides)
 
@@ -44,8 +44,9 @@ and persist across restarts (`cache.json`).
 
 Widget precedence: UNCONFIGURED → NO_DATA → **ERROR** (red dot, `offline · data
 from HH:MM`, last fetch attempt failed, cached values stay visible) → **STALE**
-(amber dot, `stale · data from HH:MM`, server flagged stale or our own last
-success is >45 min old) → **FRESH** (green dot, `updated HH:MM`).
+(amber dot, `stale · data from HH:MM` or `stale since HH:MM`, server flagged
+stale or our own last success is older than three refresh intervals — 45 min
+at the default 15) → **FRESH** (green dot, `updated HH:MM`).
 
 Rows carry the provider logomark (Anthropic terracotta / OpenAI white, bundled
 vectors) on each group's first line. Every bridge window renders in bridge
@@ -56,22 +57,45 @@ goes down intermittently; its 5h/week rows stay visible).
 
 ## Refresh cadence
 
-WorkManager periodic fetch every **15 minutes** (network-constrained), plus
-`updatePeriodMillis=30 min` as system backstop, plus **tap the widget** for an
-immediate refresh. Gear icon opens pairing.
+WorkManager periodic fetch every **15 min** by default, 30 min / 1 h / 3 h in
+Settings (network-constrained), plus `updatePeriodMillis=30 min` as system
+backstop, plus **Refresh now** in Settings. Gear icon opens Settings.
+
+## Settings
+
+One screen, opened from the launcher icon or the widget's gear. Windows at
+least 600 dp wide (the Fold's inner screen) get two panes: settings left, live
+status and a widget preview right (`res/layout-w600dp`). Narrower windows (the
+cover screen) get one scrolling column.
+
+- **Connection** — bridge URL (Paste / Use default / Clear) and bearer token
+  (Show/Hide). **Test** reports `Connected · N usage windows · answered in
+  N ms`, or the failure reason: timeout, DNS, refused, TLS, `HTTP 401 · bad
+  token`, `HTTP 404 · not a Headroom bridge`, `HTTP 503 · no usage data yet`.
+  **Save** validates the URL and persists both.
+- **Refresh** — cadence choice and **Refresh now**.
+- **Shown on widget** — per-provider switches and per-window checkboxes
+  (windows listed from the last successful fetch).
+- **Status** — fresh/stale/offline headline, last fetch and last success
+  (clock + age), last error, server staleness, cadence and bridge host.
+- **Widget preview** — the real widget renderer applied in-app.
+
+A saved URL on the retired host `crqpt-server.tail58339.ts.net` is rewritten to
+`maia-server.tail58339.ts.net` (same scheme, port and path) the first time the
+app touches its settings; the widget also does this on `MY_PACKAGE_REPLACED`,
+so an update heals a stuck widget without opening the app.
 
 ## Install on the Fold 8
 
 1. Tailscale app: connected (device `williams-z-fold8` on the tailnet).
-2. Get the APK, either way:
-   - Tailscale app → Files: accept `fold-usage-widget-0.1.0.apk` (Taildrop),
-   - or open `https://crqpt-server.tail58339.ts.net:8377/apk` in the browser.
-3. Open the downloaded file, allow install-unknown-apps for the browser/files
-   app when prompted (sideload; signed with the project key in `keystore/`).
-4. Open **ALLM Headroom**, paste the private relay URL (prefilled) and the token:
-   `cat ~/.ghost/services/sub-usage-bridge/token` on crqpt-server.
-5. **Test** → expect `OK ✓ N usage windows` → **Save** → **Add panel to home
-   screen** (or long-press home screen → Widgets → AI headroom).
+2. Open `https://static.crqpt.com/apks/allm-headroom-<version>.apk` in the
+   browser and open the download.
+3. Allow install-unknown-apps for the browser when prompted (sideload; signed
+   with the project key in `keystore/`, so it installs over earlier versions).
+4. Open **ALLM Headroom**: the URL is prefilled; paste the token
+   (`cat ~/.ghost/services/sub-usage-bridge/token` on maia-server).
+5. **Test** → expect `Connected` → **Save** → **Add widget to home screen**
+   (or long-press home screen → Widgets → AI headroom).
 
 ## Product surfaces
 
@@ -97,12 +121,11 @@ immediate refresh. Gear icon opens pairing.
 - `~/.config/systemd/user/sub-usage-bridge.service` — enabled, running.
 - Tailnet exposure (idempotent, survives reboots as tailscaled state):
   `sudo tailscale serve --bg --https=8377 http://127.0.0.1:8378`
-  `sudo tailscale serve --bg --https=8377 --set-path=/apk /data/crqpt/repos/Asi0Flammeus/fold-usage-widget/fold-usage-widget-0.1.0.apk`
 
 ## Build & test (server-side)
 
 ```
-cd /data/crqpt/repos/Asi0Flammeus/fold-usage-widget
+cd /data/crqpt/repos/Asi0Flammeus/allm-headroom
 ./gradlew :app:assembleRelease :app:testReleaseUnitTest   # APK + display-state tests
 ```
 SDK at `/home/crqpt/android-sdk` (local.properties), AGP 8.13.2, Kotlin 2.2.21,
@@ -110,7 +133,7 @@ gradle 8.14.5 wrapper — same toolchain as fold8-pdf-reader. Release signing
 uses `keystore/fold-usage-widget.jks` + `keystore/keystore.properties`
 (gitignored, 0600; keep them or future updates need an uninstall/reinstall).
 Output: `app/build/outputs/apk/release/app-release.apk`, stable copy
-`fold-usage-widget-0.1.0.apk` at the project root.
+`allm-headroom-<version>.apk` at the project root.
 
 Smoke-tested 2026-08-19 on the `fold8test` AVD (android-36): paired through the
 real UI, pinned the widget, and drove all three states — fresh (green, live
