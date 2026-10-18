@@ -19,9 +19,10 @@ class HeadroomActivity : Activity() {
         window.statusBarColor = paper
         window.navigationBarColor = paper
         window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        val page = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(24, 28, 24, 36); setBackgroundColor(paper) }
+        val page = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(24), dp(12), dp(24), dp(24)); setBackgroundColor(paper) }
         val scroll = ScrollView(this).apply { setBackgroundColor(paper); addView(page) }
         setContentView(scroll)
+        applySystemInsets(scroll)
         val store = UsageStore(this)
         title(page, "ALLM Headroom", 29, INK)
         text(page, "Your private AI capacity monitor", 15, BODY)
@@ -55,6 +56,7 @@ class HeadroomActivity : Activity() {
     private fun headroomColor(value: Int): Int = when { value > 30 -> Color.rgb(22, 100, 65); value > 20 -> Color.rgb(142, 76, 0); value > 10 -> Color.rgb(155, 58, 12); value > 5 -> Color.rgb(164, 45, 38); else -> Color.rgb(132, 29, 29) }
     private fun title(parent: LinearLayout, value: String, size: Int, color: Int) = text(parent, value, size, color).apply { setPadding(0, 24, 0, 8) }
     private fun text(parent: LinearLayout, value: String, size: Int, color: Int): TextView = TextView(this).also { it.text = value; it.textSize = size.toFloat(); it.setTextColor(color); parent.addView(it) }
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     private companion object {
         const val INK = 0xFF16201C.toInt()

@@ -6,14 +6,12 @@ import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.text.InputType
 import android.view.View
-import android.view.WindowInsets
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
@@ -69,7 +67,7 @@ class ConfigActivity : Activity() {
         super.onCreate(savedInstanceState)
         setResult(RESULT_CANCELED) // configure flow: back == don't place the widget
         setContentView(R.layout.activity_config)
-        applyInsets(findViewById(R.id.config_root))
+        applySystemInsets(findViewById(R.id.config_root))
 
         store = UsageStore(this)
         urlField = findViewById(R.id.field_url)
@@ -116,21 +114,6 @@ class ConfigActivity : Activity() {
         super.onPause()
         store.unregisterListener(prefsListener)
         ticker.removeCallbacks(tick)
-    }
-
-    /** Edge-to-edge is enforced at targetSdk 35+: pad for system bars, cutouts and the keyboard. */
-    private fun applyInsets(root: View) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            root.fitsSystemWindows = true
-            return
-        }
-        root.setOnApplyWindowInsetsListener { v, insets ->
-            val i = insets.getInsets(
-                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout() or WindowInsets.Type.ime(),
-            )
-            v.setPadding(i.left, i.top, i.right, i.bottom)
-            WindowInsets.CONSUMED
-        }
     }
 
     // --- connection -------------------------------------------------------------------
