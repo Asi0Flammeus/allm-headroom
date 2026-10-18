@@ -39,8 +39,11 @@
             </intent-filter>
         </activity>
 
+        <!-- NoActionBar: the screen draws its own title, and at targetSdk 35+ the
+             framework action bar sat over the first lines of content. -->
         <activity
             android:name=".HeadroomActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
     </application>
 </manifest>

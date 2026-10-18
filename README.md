@@ -158,3 +158,7 @@ under asi0's own straight-line rule (`100 * secondsUntilReset /
 windowLengthSeconds`; 5h and 7-day window lengths, keyed by the bridge's
 stable window id). 25 JVM tests (5 new, incl. pace boundaries and the
 weekly/weekly-scoped duration mapping).
+
+versionCode 7 / 0.3.1 (2026-10-18): the Headroom activity now uses a
+no-action-bar theme and applies system-window insets, so its own heading sits
+below the status bar instead of being covered by a framework title bar.
