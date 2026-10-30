@@ -17,11 +17,6 @@ class UsageStore(context: Context) {
     private val prefs: SharedPreferences =
         context.applicationContext.getSharedPreferences("usage", Context.MODE_PRIVATE)
 
-    init {
-        // Installs paired with a retired bridge host rehome themselves on first use.
-        Endpoint.migrated(baseUrl)?.let { prefs.edit().putString(KEY_URL, it).apply() }
-    }
-
     var baseUrl: String
         get() = prefs.getString(KEY_URL, "") ?: ""
         set(value) = prefs.edit().putString(KEY_URL, Endpoint.normalize(value)).apply()

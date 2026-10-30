@@ -8,45 +8,13 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
-/** Bridge URL migration/validation, failure reasons, refresh cadence and age text: pure JVM. */
+/** Bridge URL validation, failure reasons, refresh cadence and age text: pure JVM. */
 class SettingsTest {
-
-    // --- retired-host migration ---
-
-    @Test
-    fun `default points at bridge-host`() {
-        assertEquals("https://bridge.example.ts.net:8377", Endpoint.DEFAULT_URL)
-    }
-
-    @Test
-    fun `saved old-bridge-host URL migrates to bridge-host`() {
-        assertEquals(
-            "https://bridge.example.ts.net:8377",
-            Endpoint.migrated("https://old-bridge.example.ts.net:8377"),
-        )
-    }
-
-    @Test
-    fun `migration keeps scheme port and path and ignores host case`() {
-        assertEquals(
-            "http://bridge.example.ts.net:9000/bridge",
-            Endpoint.migrated("http://OLD-BRIDGE.example.ts.net:9000/bridge/"),
-        )
-    }
-
-    @Test
-    fun `current or custom URLs are left alone`() {
-        assertNull(Endpoint.migrated("https://bridge.example.ts.net:8377"))
-        assertNull(Endpoint.migrated("https://example.org"))
-        assertNull(Endpoint.migrated(""))
-        assertNull(Endpoint.migrated("not a url ::"))
-    }
 
     // --- Save-time validation ---
 
     @Test
-    fun `validation accepts the default and names what is wrong otherwise`() {
-        assertNull(Endpoint.problem(Endpoint.DEFAULT_URL))
+    fun `validation accepts a bridge URL and names what is wrong otherwise`() {
         assertNull(Endpoint.problem("  https://bridge.example.ts.net:8377/  "))
         assertEquals("URL is required", Endpoint.problem("   "))
         assertEquals("must start with https://", Endpoint.problem("bridge.example.ts.net:8377"))

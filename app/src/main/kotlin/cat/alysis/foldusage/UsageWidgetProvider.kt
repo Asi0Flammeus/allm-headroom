@@ -42,11 +42,8 @@ class UsageWidgetProvider : AppWidgetProvider() {
                 WidgetRenderer.updateAll(context)
                 schedulePaceTick(context)
             }
-            // An APK update must heal a widget paired with a retired bridge host
-            // without the user opening the app: UsageStore migrates the saved URL
-            // on construction, then fetch from the new host right away.
+            // An APK update must heal a stuck widget without the user opening the app.
             Intent.ACTION_MY_PACKAGE_REPLACED -> {
-                UsageStore(context)
                 FetchUsageWorker.schedulePeriodic(context)
                 FetchUsageWorker.refreshNow(context)
                 schedulePaceTick(context)

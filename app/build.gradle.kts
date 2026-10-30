@@ -10,6 +10,11 @@ val keystoreProps = Properties().apply {
     if (f.exists()) f.inputStream().use { load(it) }
 }
 
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+
 android {
     namespace = "cat.alysis.foldusage"
     compileSdk = 36
@@ -21,6 +26,14 @@ android {
         targetSdk = 36
         versionCode = 7
         versionName = "0.3.1"
+
+        // The prefilled bridge URL stays out of the repo: local.properties only.
+        val defaultUrl = localProps.getProperty("headroom.defaultUrl", "")
+        buildConfigField("String", "DEFAULT_BRIDGE_URL", "\"$defaultUrl\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {

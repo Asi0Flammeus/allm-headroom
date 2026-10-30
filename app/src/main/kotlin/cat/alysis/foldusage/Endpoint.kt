@@ -2,29 +2,11 @@ package cat.alysis.foldusage
 
 import java.net.URI
 
-/** Bridge URL rules: the default, retired-host migration, and Save-time validation. Pure JVM. */
+/** Bridge URL rules: the build's default and Save-time validation. Pure JVM. */
 object Endpoint {
 
-    const val DEFAULT_HOST = "bridge.example.ts.net"
-    const val DEFAULT_URL = "https://$DEFAULT_HOST:8377"
-
-    /** Hosts the bridge used to live on. A saved URL on one of them is dead and gets rehomed. */
-    private val RETIRED_HOSTS = setOf("old-bridge.example.ts.net")
-
-    /**
-     * The URL to store instead of [saved], or null when [saved] needs no change.
-     * Only the host moves; scheme, port and path stay as the user saved them.
-     */
-    fun migrated(saved: String): String? {
-        val uri = try {
-            URI(saved.trim())
-        } catch (_: Exception) {
-            return null
-        }
-        if (uri.host?.lowercase() !in RETIRED_HOSTS) return null
-        return URI(uri.scheme, uri.userInfo, DEFAULT_HOST, uri.port, uri.path, uri.query, uri.fragment)
-            .toString().trimEnd('/')
-    }
+    /** Blank unless the build sets `headroom.defaultUrl` in local.properties (never committed). */
+    val DEFAULT_URL: String get() = BuildConfig.DEFAULT_BRIDGE_URL
 
     fun normalize(input: String): String = input.trim().trimEnd('/')
 

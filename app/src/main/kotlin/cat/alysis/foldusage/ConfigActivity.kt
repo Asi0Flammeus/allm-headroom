@@ -81,7 +81,10 @@ class ConfigActivity : Activity() {
         applyTokenVisibility()
 
         findViewById<Button>(R.id.btn_paste).setOnClickListener { pasteUrl() }
-        findViewById<Button>(R.id.btn_default_url).setOnClickListener { setUrl(Endpoint.DEFAULT_URL) }
+        findViewById<Button>(R.id.btn_default_url).apply {
+            visibility = if (Endpoint.DEFAULT_URL.isBlank()) View.GONE else View.VISIBLE
+            setOnClickListener { setUrl(Endpoint.DEFAULT_URL) }
+        }
         findViewById<Button>(R.id.btn_clear_url).setOnClickListener {
             setUrl("")
             urlField.requestFocus()

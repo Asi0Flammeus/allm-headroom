@@ -80,11 +80,6 @@ cover screen) get one scrolling column.
   (clock + age), last error, server staleness, cadence and bridge host.
 - **Widget preview** — the real widget renderer applied in-app.
 
-A saved URL on the retired host `old-bridge.example.ts.net` is rewritten to
-`bridge.example.ts.net` (same scheme, port and path) the first time the
-app touches its settings; the widget also does this on `MY_PACKAGE_REPLACED`,
-so an update heals a stuck widget without opening the app.
-
 ## Install on the Fold 8
 
 1. Tailscale app: connected (device `my-phone` on the tailnet).
@@ -92,7 +87,7 @@ so an update heals a stuck widget without opening the app.
    browser and open the download.
 3. Allow install-unknown-apps for the browser when prompted (sideload; signed
    with the project key in `keystore/`, so it installs over earlier versions).
-4. Open **ALLM Headroom**: the URL is prefilled; paste the token
+4. Open **ALLM Headroom**: enter the bridge URL (prefilled if the build set one); paste the token
    (`cat ~/services/sub-usage-bridge/token` on bridge-host).
 5. **Test** → expect `Connected` → **Save** → **Add widget to home screen**
    (or long-press home screen → Widgets → AI headroom).
@@ -128,7 +123,9 @@ so an update heals a stuck widget without opening the app.
 cd ~/src/allm-headroom
 ./gradlew :app:assembleRelease :app:testReleaseUnitTest   # APK + display-state tests
 ```
-SDK at `~/android-sdk` (local.properties), AGP 8.13.2, Kotlin 2.2.21,
+Optional prefilled bridge URL: `headroom.defaultUrl=https://...` in
+`local.properties` (gitignored; a public build leaves it blank). SDK at
+`~/android-sdk` (local.properties), AGP 8.13.2, Kotlin 2.2.21,
 gradle 8.14.5 wrapper — same toolchain as fold8-pdf-reader. Release signing
 uses `keystore/fold-usage-widget.jks` + `keystore/keystore.properties`
 (gitignored, 0600; keep them or future updates need an uninstall/reinstall).
