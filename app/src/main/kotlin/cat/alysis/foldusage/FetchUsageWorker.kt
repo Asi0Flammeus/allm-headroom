@@ -13,10 +13,10 @@ import androidx.work.WorkerParameters
 import java.time.Duration
 
 /**
- * Fetches /usage from the paired bridge, persists the outcome, re-renders all
- * widget instances. Always returns success: the periodic tick (user-chosen
- * cadence, 15 min by default) is the retry; explicit error state is the
- * user-visible signal.
+ * Fetches /usage and /usage/weekly from the paired bridge, persists each
+ * outcome, re-renders all widget instances of both providers. Always returns
+ * success: the periodic tick (user-chosen cadence, 15 min by default) is the
+ * retry; explicit error state is the user-visible signal.
  */
 class FetchUsageWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
@@ -24,9 +24,25 @@ class FetchUsageWorker(context: Context, params: WorkerParameters) : Worker(cont
         val store = UsageStore(applicationContext)
         if (store.isConfigured) {
             fetchInto(store)
+            fetchWeeklyInto(store)
         }
         WidgetRenderer.updateAll(applicationContext)
+        WeeklyWidgetRenderer.updateAll(applicationContext)
         return Result.success()
+    }
+
+    /** The weekly view is its own request so an older bridge (404 there) never breaks the main widget. */
+    private fun fetchWeeklyInto(store: UsageStore) {
+        try {
+            val resp = Http.get("${store.baseUrl}/usage/weekly", store.token)
+            when (resp.code) {
+                200 -> store.saveWeeklySuccess(resp.body, parseWeekly(resp.body), System.currentTimeMillis())
+                404 -> store.saveWeeklyError("bridge has no weekly view yet")
+                else -> store.saveWeeklyError(Http.describeStatus(resp.code, resp.body))
+            }
+        } catch (e: Exception) {
+            store.saveWeeklyError(Http.describeFailure(e))
+        }
     }
 
     private fun fetchInto(store: UsageStore) {

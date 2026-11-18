@@ -28,7 +28,8 @@ class UsageWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onDisabled(context: Context) {
-        FetchUsageWorker.cancelPeriodic(context)
+        // The weekly widget shares the fetch: keep it scheduled while one is still placed.
+        if (!WeeklyWidgetRenderer.hasInstances(context)) FetchUsageWorker.cancelPeriodic(context)
         context.getSystemService(AlarmManager::class.java).cancel(tickIntent(context))
     }
 

@@ -97,7 +97,8 @@ class ConfigActivity : Activity() {
         findViewById<Button>(R.id.btn_test).setOnClickListener { testConnection() }
         findViewById<Button>(R.id.btn_save).setOnClickListener { save() }
         findViewById<Button>(R.id.btn_refresh_now).setOnClickListener { refreshNow() }
-        findViewById<Button>(R.id.btn_pin).setOnClickListener { requestPin() }
+        findViewById<Button>(R.id.btn_pin).setOnClickListener { requestPin(UsageWidgetProvider::class.java) }
+        findViewById<Button>(R.id.btn_pin_weekly).setOnClickListener { requestPin(WeeklyWidgetProvider::class.java) }
         bindRefreshChoice()
     }
 
@@ -241,6 +242,7 @@ class ConfigActivity : Activity() {
             store.refreshMinutes = minutes
             if (store.isConfigured) FetchUsageWorker.schedulePeriodic(this, ExistingPeriodicWorkPolicy.UPDATE)
             WidgetRenderer.updateAll(this)
+            WeeklyWidgetRenderer.updateAll(this)
         }
     }
 
@@ -358,15 +360,13 @@ class ConfigActivity : Activity() {
 
     // --- home screen -------------------------------------------------------------------
 
-    private fun requestPin() {
+    private fun requestPin(provider: Class<*>) {
         val manager = AppWidgetManager.getInstance(this)
         if (!manager.isRequestPinAppWidgetSupported) {
             Toast.makeText(this, R.string.pin_unsupported, Toast.LENGTH_LONG).show()
             return
         }
-        manager.requestPinAppWidget(
-            ComponentName(this, UsageWidgetProvider::class.java), null, null,
-        )
+        manager.requestPinAppWidget(ComponentName(this, provider), null, null)
     }
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()

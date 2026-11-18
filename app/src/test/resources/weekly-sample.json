@@ -1,0 +1,398 @@
+{
+  "schema": 1,
+  "window": {
+    "start": "2026-11-17T07:00:00Z",
+    "resets_at": "2026-11-24T07:00:00Z",
+    "used_percent": 20.0,
+    "remaining_percent": 80.0,
+    "elapsed_fraction": 0.1674,
+    "timezone": "Europe/Paris"
+  },
+  "curve": [
+    [
+      1794898800,
+      0.0
+    ],
+    [
+      1794899610,
+      0.0
+    ],
+    [
+      1794901410,
+      0.0
+    ],
+    [
+      1794903215,
+      1.0
+    ],
+    [
+      1794905025,
+      1.0
+    ],
+    [
+      1794906829,
+      2.0
+    ],
+    [
+      1794908636,
+      2.0
+    ],
+    [
+      1794910437,
+      2.0
+    ],
+    [
+      1794912240,
+      3.0
+    ],
+    [
+      1794914040,
+      4.0
+    ],
+    [
+      1794915841,
+      4.0
+    ],
+    [
+      1794917641,
+      5.0
+    ],
+    [
+      1794919469,
+      7.0
+    ],
+    [
+      1794921270,
+      7.0
+    ],
+    [
+      1794923071,
+      8.0
+    ],
+    [
+      1794924870,
+      8.0
+    ],
+    [
+      1794926674,
+      9.0
+    ],
+    [
+      1794928489,
+      9.0
+    ],
+    [
+      1794930299,
+      9.0
+    ],
+    [
+      1794932100,
+      10.0
+    ],
+    [
+      1794933900,
+      10.0
+    ],
+    [
+      1794935700,
+      10.0
+    ],
+    [
+      1794937500,
+      11.0
+    ],
+    [
+      1794939301,
+      12.0
+    ],
+    [
+      1794941101,
+      12.0
+    ],
+    [
+      1794942901,
+      12.0
+    ],
+    [
+      1794944701,
+      12.0
+    ],
+    [
+      1794946501,
+      12.0
+    ],
+    [
+      1794948301,
+      12.0
+    ],
+    [
+      1794950104,
+      12.0
+    ],
+    [
+      1794951908,
+      12.0
+    ],
+    [
+      1794953708,
+      13.0
+    ],
+    [
+      1794955508,
+      13.0
+    ],
+    [
+      1794957309,
+      13.0
+    ],
+    [
+      1794959117,
+      13.0
+    ],
+    [
+      1794960917,
+      13.0
+    ],
+    [
+      1794962719,
+      13.0
+    ],
+    [
+      1794964519,
+      13.0
+    ],
+    [
+      1794966319,
+      14.0
+    ],
+    [
+      1794968122,
+      14.0
+    ],
+    [
+      1794969924,
+      15.0
+    ],
+    [
+      1794971729,
+      15.0
+    ],
+    [
+      1794973530,
+      15.0
+    ],
+    [
+      1794975330,
+      15.0
+    ],
+    [
+      1794977130,
+      15.0
+    ],
+    [
+      1794978930,
+      15.0
+    ],
+    [
+      1794980736,
+      15.0
+    ],
+    [
+      1794982549,
+      15.0
+    ],
+    [
+      1794984359,
+      15.0
+    ],
+    [
+      1794986160,
+      15.0
+    ],
+    [
+      1794987960,
+      15.0
+    ],
+    [
+      1794989760,
+      16.0
+    ],
+    [
+      1794991561,
+      17.0
+    ],
+    [
+      1794993360,
+      18.0
+    ],
+    [
+      1794995179,
+      19.0
+    ],
+    [
+      1794996979,
+      19.0
+    ],
+    [
+      1794998789,
+      20.0
+    ],
+    [
+      1794999959,
+      20.0
+    ]
+  ],
+  "types": [
+    {
+      "id": "main",
+      "label": "Main"
+    },
+    {
+      "id": "workers",
+      "label": "Workers"
+    },
+    {
+      "id": "sentinels",
+      "label": "Sentinels"
+    },
+    {
+      "id": "t3",
+      "label": "T3 Code"
+    },
+    {
+      "id": "alfred",
+      "label": "Alfred"
+    }
+  ],
+  "days": [
+    {
+      "start": "2026-11-17T07:00:00Z",
+      "label": "Tue",
+      "state": "complete",
+      "delta_percent": 15.0,
+      "by_type": {
+        "main": 2.35,
+        "workers": 3.89,
+        "sentinels": 3.09,
+        "t3": 5.27,
+        "alfred": 0.4,
+        "unattributed": 0.0
+      },
+      "cost_usd": {
+        "main": 57.38,
+        "workers": 95.06,
+        "sentinels": 75.69,
+        "t3": 128.98,
+        "alfred": 9.87
+      }
+    },
+    {
+      "start": "2026-11-18T07:00:00Z",
+      "label": "Wed",
+      "state": "partial",
+      "delta_percent": 5.0,
+      "by_type": {
+        "main": 0.83,
+        "workers": 3.95,
+        "sentinels": 0.06,
+        "t3": 0.15,
+        "alfred": 0.01,
+        "unattributed": 0.0
+      },
+      "cost_usd": {
+        "main": 24.02,
+        "workers": 114.46,
+        "sentinels": 1.84,
+        "t3": 4.29,
+        "alfred": 0.22
+      }
+    },
+    {
+      "start": "2026-11-19T07:00:00Z",
+      "label": "Thu",
+      "state": "future"
+    },
+    {
+      "start": "2026-11-20T07:00:00Z",
+      "label": "Fri",
+      "state": "future"
+    },
+    {
+      "start": "2026-11-21T07:00:00Z",
+      "label": "Sat",
+      "state": "future"
+    },
+    {
+      "start": "2026-11-22T07:00:00Z",
+      "label": "Sun",
+      "state": "future"
+    },
+    {
+      "start": "2026-11-23T07:00:00Z",
+      "label": "Mon",
+      "state": "future"
+    }
+  ],
+  "scoped_windows": {},
+  "workers_left": {
+    "opus": {
+      "count": 377,
+      "pct_per_worker": 0.2117,
+      "governed_by": "weekly"
+    },
+    "sonnet": {
+      "count": 1656,
+      "pct_per_worker": 0.0483,
+      "governed_by": "weekly"
+    }
+  },
+  "calibration": {
+    "file": "worker-costs.json",
+    "calibrated_at": "2026-11-18T10:58:45Z",
+    "pct_per_usd": 0.039491,
+    "families": {
+      "opus": {
+        "n": 150,
+        "median_usd": 5.36,
+        "p25_usd": 2.853,
+        "p75_usd": 8.254,
+        "pct_per_worker": 0.2117,
+        "mean_pct_per_worker": 0.2363,
+        "workers_per_full_week": 472,
+        "agents": {
+          "task-opus-high": 86,
+          "task-opus-medium": 64
+        }
+      },
+      "sonnet": {
+        "n": 281,
+        "median_usd": 1.222,
+        "p25_usd": 0.655,
+        "p75_usd": 1.925,
+        "pct_per_worker": 0.0483,
+        "mean_pct_per_worker": 0.0602,
+        "workers_per_full_week": 2072,
+        "agents": {
+          "task-sonnet": 240,
+          "task": 41
+        }
+      }
+    }
+  },
+  "attribution": {
+    "method": "cost-weighted list-price USD per usage type, scaled to each day's measured weekly % delta",
+    "tokens_as_of": "2026-11-18T11:03:49Z",
+    "points": 59
+  },
+  "past_windows": [],
+  "fetched_at": "2026-11-18T11:05:59Z",
+  "age_seconds": 111,
+  "stale_after_seconds": 2700,
+  "fetch_error": null,
+  "last_attempt_at": "2026-11-18T11:05:59Z",
+  "generated_at": "2026-11-18T11:07:51Z",
+  "stale": false,
+  "stale_since": null,
+  "computed_at": "2026-11-18T11:07:01Z",
+  "compute_error": null
+}

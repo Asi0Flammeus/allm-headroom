@@ -102,17 +102,34 @@ cover screen) get one scrolling column.
 - **Threshold gradient** — capacity is calm above 30%, then moves from amber
   through orange to deeper red at 10%, 5%, and below. This is deliberately a
   gradient of urgency rather than a single abrupt warning state.
-- **Model mix (planned data source)** — subscription APIs currently expose
-  aggregate usage windows, not model-attributed token events. The app says so
-  rather than inventing token counts. When the private relay can supply these
-  events, the intended view is daily stacked bars: Anthropic orange, OpenAI
-  green, with deeper tones for higher-tier models.
+- **Claude week widget (0.4.0)**: a second, larger widget (5x3 on the Fold
+  inner screen, resizable) for Anthropic only. It draws the current weekly
+  window, from `resets_at` minus 7 days to the reset (no weekday is
+  hardcoded): a dashed straight line from 0% at the window start to 100% at
+  the reset, the cumulative weekly % curve, shading for over or under that
+  pace, and one stacked bar per 24 h slice splitting that day's measured
+  weekly % into Main (resident Ghost session), Workers (task subagents),
+  Sentinels (Carol included), T3 Code and Alfred. The footer estimates the
+  workers the remaining quota still pays for, Opus or Sonnet. The chart is a
+  Canvas bitmap sized from the launcher's reported widget size. The app view
+  lists each weekly window seen by the phone with its per-type totals.
+  Data: `/usage/weekly` on the same bridge (see Server pieces). An older
+  bridge answers 404 there; the weekly widget then says so and the original
+  widget is unaffected.
 
 ## Server pieces
 
-- `~/services/sub-usage-bridge/server.py` — stdlib-only bridge
+- `~/.ghost/services/sub-usage-bridge/server.py`: stdlib-only bridge
   (env-tunable: `SUB_BRIDGE_PORT/HOST/TTL/STALE_AFTER/TOKEN_FILE/CACHE_FILE`,
-  `SUB_USAGE_CMD`); full schema in its docstring.
+  `SUB_USAGE_CMD`, `SUB_BRIDGE_WEEKLY_TTL`); full schema in its docstring.
+- `/usage/weekly` (same token, same freshness fields plus `computed_at`):
+  `weekly.py` splits each day's measured weekly % delta across the five usage
+  types by list-price-weighted tokens from the token-consumption-journal
+  store (Carol from sourcing.db `carol_run` while the journal misses her).
+  The type mapping, Carol's line and prices live in `weekly-config.json`.
+  Workers left = remaining % / per-worker % from `worker-costs.json`, which
+  `calibrate.py` rewrites every Tuesday (`sub-usage-weekly-calibrate.timer`)
+  from the median cost of completed task subagents over 14 days.
 - `~/.config/systemd/user/sub-usage-bridge.service` — enabled, running.
 - Tailnet exposure (idempotent, survives reboots as tailscaled state):
   `sudo tailscale serve --bg --https=8377 http://127.0.0.1:8378`

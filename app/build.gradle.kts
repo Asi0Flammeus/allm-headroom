@@ -24,8 +24,8 @@ android {
         applicationId = "cat.alysis.foldusage"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "0.3.1"
+        versionCode = 8
+        versionName = "0.4.0"
 
         // The prefilled bridge URL stays out of the repo: local.properties only.
         val defaultUrl = localProps.getProperty("headroom.defaultUrl", "")

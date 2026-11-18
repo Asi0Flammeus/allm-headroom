@@ -6,6 +6,11 @@
     <string name="gear">\u2699</string>
     <string name="status_placeholder">loading\u2026</string>
 
+    <string name="weekly_widget_label">Claude week</string>
+    <string name="weekly_title">Claude this week</string>
+    <string name="weekly_chart_desc">Weekly quota used against an even pace, with each day split by usage type</string>
+    <string name="btn_pin_weekly">Add weekly widget</string>
+
     <string name="settings_subtitle">Settings \u00b7 private relay</string>
 
     <string name="section_connection">Connection</string>

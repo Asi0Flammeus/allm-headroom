@@ -18,6 +18,9 @@ object WidgetRenderer {
     private const val ERROR_COLOR = 0xFFF87171.toInt()
     private const val NEUTRAL_COLOR = 0xFF9CA3AF.toInt()
 
+    fun hasInstances(context: Context): Boolean = AppWidgetManager.getInstance(context)
+        .getAppWidgetIds(ComponentName(context, UsageWidgetProvider::class.java)).isNotEmpty()
+
     fun updateAll(context: Context) {
         val manager = AppWidgetManager.getInstance(context)
         val ids = manager.getAppWidgetIds(ComponentName(context, UsageWidgetProvider::class.java))

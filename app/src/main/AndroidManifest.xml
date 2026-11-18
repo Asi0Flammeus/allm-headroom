@@ -25,6 +25,20 @@
                 android:resource="@xml/usage_widget_info" />
         </receiver>
 
+        <!-- The larger Anthropic weekly view: curve vs even pace, per-day usage types, workers left. -->
+        <receiver
+            android:name=".WeeklyWidgetProvider"
+            android:exported="false"
+            android:label="@string/weekly_widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/weekly_widget_info" />
+        </receiver>
+
         <activity
             android:name=".ConfigActivity"
             android:exported="true"
