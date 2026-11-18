@@ -336,14 +336,32 @@
   "scoped_windows": {},
   "workers_left": {
     "opus": {
-      "count": 377,
-      "pct_per_worker": 0.2117,
-      "governed_by": "weekly"
+      "count": 197,
+      "raw_count": 337,
+      "pct_per_worker": 0.2312,
+      "governed_by": "weekly",
+      "estimate": false,
+      "method": "cost_route",
+      "n": 79
     },
     "sonnet": {
-      "count": 1656,
-      "pct_per_worker": 0.0483,
-      "governed_by": "weekly"
+      "count": 1148,
+      "raw_count": 1959,
+      "pct_per_worker": 0.0398,
+      "governed_by": "weekly",
+      "estimate": false,
+      "method": "cost_route",
+      "n": 80
+    },
+    "fable": {
+      "count": 49,
+      "raw_count": 49,
+      "pct_per_worker": 2.0,
+      "governed_by": "Fable",
+      "estimate": true,
+      "method": "scoped_window_delta",
+      "n": 1,
+      "weekly_count": 6
     }
   },
   "calibration": {
@@ -394,5 +412,16 @@
   "stale": false,
   "stale_since": null,
   "computed_at": "2026-11-18T11:07:01Z",
-  "compute_error": null
+  "compute_error": null,
+  "reserve": {
+    "reserve_percent": 32.28,
+    "reserve_daily_mean": 5.576,
+    "days_left": 5.79,
+    "types": [
+      "main",
+      "sentinels",
+      "alfred"
+    ],
+    "days_counted": 7
+  }
 }

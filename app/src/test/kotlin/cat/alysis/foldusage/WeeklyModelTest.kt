@@ -21,8 +21,32 @@ class WeeklyModelTest {
         assertEquals(ms("2026-11-24T07:00:00Z"), u.resetMs)
         assertEquals(7, u.days.size)
         assertEquals(listOf("main", "workers", "sentinels", "t3", "alfred"), u.types.map { it.id })
-        assertEquals(377, u.workers["opus"]?.count)
-        assertEquals(1656, u.workers["sonnet"]?.count)
+        assertEquals(197, u.workers["opus"]?.count)
+        assertEquals(1148, u.workers["sonnet"]?.count)
+        assertEquals(WorkerEstimate(49, 2.0, "Fable", estimate = true), u.workers["fable"])
+        assertEquals(false, u.workers["opus"]?.estimate)
+    }
+
+    @Test
+    fun footerListsOpusSonnetFableWithEstimateMark() {
+        val u = parseWeekly(body)
+        assertEquals(
+            listOf(WorkerCount("197", "Opus"), WorkerCount("1,148", "Sonnet"), WorkerCount("~49", "Fable")),
+            WeeklyDisplay.workerCounts(u),
+        )
+        // An older bridge without Fable: the footer just omits it.
+        val old = u.copy(workers = u.workers - "fable")
+        assertEquals(listOf("Opus", "Sonnet"), WeeklyDisplay.workerCounts(old).map { it.label })
+    }
+
+    @Test
+    fun reserveNoteFollowsTheBridge() {
+        val u = parseWeekly(body)
+        assertEquals(32.28, u.reservePercent!!, 1e-9)
+        assertEquals("after 32% reserve", WeeklyDisplay.reserveNote(u))
+        // A bridge without a reserve (before calibration): no note.
+        assertEquals("", WeeklyDisplay.reserveNote(u.copy(reservePercent = null)))
+        assertEquals(null, parseWeekly(org.json.JSONObject(body).apply { remove("reserve") }.toString()).reservePercent)
     }
 
     @Test
@@ -38,9 +62,23 @@ class WeeklyModelTest {
         assertEquals(0.0, WeeklyDisplay.evenPacePercent(u, u.startMs), 1e-9)
         assertEquals(50.0, WeeklyDisplay.evenPacePercent(u, (u.startMs + u.resetMs) / 2), 1e-9)
         assertEquals(100.0, WeeklyDisplay.evenPacePercent(u, u.resetMs + 1), 1e-9)
-        assertEquals("3.3 pts over even pace" to true, WeeklyDisplay.paceText(3.26))
-        assertEquals("1.5 pts under even pace" to false, WeeklyDisplay.paceText(-1.5))
-        assertEquals("on even pace" to null, WeeklyDisplay.paceText(0.4))
+        val week = 7 * 24 * 3_600_000L
+        // 3.3 pts of a 168 h window = 5.544 h = 5h33.
+        assertEquals("+3.3 pts · 5h33 idle to pace" to true, WeeklyDisplay.paceText(3.26, week))
+        assertEquals("-1.5 pts · 2h31 spare" to false, WeeklyDisplay.paceText(-1.5, week))
+        assertEquals("on even pace" to null, WeeklyDisplay.paceText(0.4, week))
+        assertEquals("6h43", WeeklyDisplay.gapTime(4.0, week))
+        // The real window length is used: 4 pts of a 100 h window = 4h00.
+        assertEquals("4h00", WeeklyDisplay.gapTime(4.0, 100 * 3_600_000L))
+    }
+
+    @Test
+    fun dayEndTotalsFollowTheCurve() {
+        val u = parseWeekly(body)
+        val now = ms("2026-11-18T11:10:00Z")
+        assertEquals(u.usedPercent, WeeklyDisplay.weekTotalAtDayEnd(u, 1, now), 1e-9) // today: the live total
+        assertEquals(WeeklyDisplay.usedAt(u, ms("2026-11-18T07:00:00Z")), WeeklyDisplay.weekTotalAtDayEnd(u, 0, now), 1e-9)
+        assertEquals(ms("2026-11-18T07:00:00Z"), WeeklyDisplay.dayEndMs(u, 0, now))
     }
 
     @Test
@@ -52,7 +90,7 @@ class WeeklyModelTest {
         assertEquals("20% used", v.usedText)
         assertEquals("resets Tue 08:00", v.resetText)
         assertEquals("updated 12:09", v.statusLine)
-        assertTrue(v.paceText.endsWith("over even pace"))
+        assertEquals("+3.2 pts · 5h23 idle to pace", v.paceText) // 20 % used vs 16.8 % pace at 28h10 of 168 h
         val all = listOf(v.usedText, v.paceText, v.resetText, v.statusLine) + v.legend.map { it.first.label }
         for (s in all) assertTrue(s, s.none { it == '\u2014' || it == '\u2013' })
         assertEquals("1,656", WeeklyDisplay.fmtCount(1656))

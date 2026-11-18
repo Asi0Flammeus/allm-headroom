@@ -20,8 +20,14 @@ data class WeeklyDay(
     val byType: Map<String, Double>, // type id (plus "unattributed") -> % of the weekly quota
 )
 
-/** Workers of one model family the remaining quota still pays for; null count = not calibrated. */
-data class WorkerEstimate(val count: Int?, val pctPerWorker: Double?, val governedBy: String?)
+/**
+ * Workers of one model family the remaining quota still pays for; null count = not calibrated.
+ * [estimate]: the bridge measured too few workers of this family (Fable: n < 5), shown with "~".
+ */
+data class WorkerEstimate(val count: Int?, val pctPerWorker: Double?, val governedBy: String?, val estimate: Boolean = false)
+
+/** One family in the footer: its count text ("374", "~101", "?") and its label ("Opus"). */
+data class WorkerCount(val count: String, val label: String)
 
 /** Parsed `/usage/weekly` body. Times are epoch milliseconds. */
 data class WeeklyUsage(
@@ -34,6 +40,8 @@ data class WeeklyUsage(
     val workers: Map<String, WorkerEstimate>,
     val stale: Boolean,
     val staleSince: String?,
+    // Weekly % held back for main + sentinels + alfred until the reset; worker counts are after it.
+    val reservePercent: Double? = null,
 )
 
 private fun parseInstantMs(s: String): Long = OffsetDateTime.parse(s).toInstant().toEpochMilli()
@@ -70,8 +78,10 @@ fun parseWeekly(body: String): WeeklyUsage {
             count = if (e.isNull("count")) null else e.optInt("count"),
             pctPerWorker = if (e.isNull("pct_per_worker")) null else e.optDouble("pct_per_worker"),
             governedBy = if (e.isNull("governed_by")) null else e.optString("governed_by"),
+            estimate = e.optBoolean("estimate", false),
         )
     } ?: emptyMap()
+    val reserve = o.optJSONObject("reserve")
     return WeeklyUsage(
         startMs = parseInstantMs(w.getString("start")),
         resetMs = parseInstantMs(w.getString("resets_at")),
@@ -82,6 +92,7 @@ fun parseWeekly(body: String): WeeklyUsage {
         workers = workers,
         stale = o.optBoolean("stale", false),
         staleSince = if (o.isNull("stale_since")) null else o.optString("stale_since"),
+        reservePercent = if (reserve == null || reserve.isNull("reserve_percent")) null else reserve.optDouble("reserve_percent"),
     )
 }
 
@@ -90,12 +101,12 @@ data class WeeklyView(
     val freshness: Freshness,
     val statusLine: String, // "updated 11:03" / "stale since 10:40" / "offline, data from 09:12"
     val usedText: String, // "20% used"
-    val paceText: String, // "3.3 pts over even pace" / "1.2 pts under even pace" / "on even pace"
+    val paceText: String, // "+3.3 pts · 5h33 idle to pace" / "-1.5 pts · 2h31 spare" / "on even pace"
     val overPace: Boolean?, // null when on pace or unknown
     val resetText: String, // "resets Tue 08:00"
     val legend: List<Pair<WeeklyType, Double>>, // each type's share of the week so far
-    val opus: Int?,
-    val sonnet: Int?,
+    val workers: List<WorkerCount>, // Opus, Sonnet, Fable: only the families the bridge serves
+    val reserveNote: String, // "after 32% reserve" when the bridge holds one back, else ""
     val usage: WeeklyUsage?,
 )
 
@@ -114,14 +125,60 @@ object WeeklyDisplay {
     fun typeTotals(u: WeeklyUsage): List<Pair<WeeklyType, Double>> =
         u.types.map { t -> t to u.days.sumOf { it.byType[t.id] ?: 0.0 } }
 
-    fun paceText(deltaPts: Double): Pair<String, Boolean?> {
+    /**
+     * Gap to even pace in points and as time. Pace is linear over the window, so a gap of
+     * g points is g/100 of the window: above pace, the idle time that brings use back onto
+     * pace; below, the time that can still be spent before reaching it. The time is computed
+     * from the rounded points shown, so the line checks by hand.
+     */
+    fun paceText(deltaPts: Double, windowMs: Long): Pair<String, Boolean?> {
         val rounded = (abs(deltaPts) * 10).roundToInt() / 10.0
+        val time = gapTime(rounded, windowMs)
         return when {
             rounded < 0.5 -> "on even pace" to null
-            deltaPts > 0 -> "${fmt1(rounded)} pts over even pace" to true
-            else -> "${fmt1(rounded)} pts under even pace" to false
+            deltaPts > 0 -> "+${fmt1(rounded)} pts · $time idle to pace" to true
+            else -> "-${fmt1(rounded)} pts · $time spare" to false
         }
     }
+
+    /** [pts] of a window lasting [windowMs], as "6h45" (hours, then two-digit minutes). */
+    fun gapTime(pts: Double, windowMs: Long): String {
+        val minutes = (pts / 100.0 * windowMs / 60_000.0).roundToInt()
+        return "${minutes / 60}h${(minutes % 60).toString().padStart(2, '0')}"
+    }
+
+    /** Cumulative used % at [ms], from the bridge curve (the last reading at or before it). */
+    fun usedAt(u: WeeklyUsage, ms: Long): Double {
+        var v = 0.0
+        for ((t, p) in u.curve) {
+            if (t > ms) break
+            v = p
+        }
+        return v
+    }
+
+    /** End of day [i] of the window, or now while that day is still running. */
+    fun dayEndMs(u: WeeklyUsage, i: Int, nowMs: Long): Long {
+        val n = u.days.size.coerceAtLeast(1)
+        return minOf(u.startMs + (u.resetMs - u.startMs) * (i + 1) / n, nowMs.coerceIn(u.startMs, u.resetMs))
+    }
+
+    /** The week total when day [i] ended (or now, for today). */
+    fun weekTotalAtDayEnd(u: WeeklyUsage, i: Int, nowMs: Long): Double {
+        val end = dayEndMs(u, i, nowMs)
+        return if (end >= nowMs.coerceIn(u.startMs, u.resetMs)) u.usedPercent else usedAt(u, end)
+    }
+
+    private val FAMILIES = listOf("opus" to "Opus", "sonnet" to "Sonnet", "fable" to "Fable")
+
+    fun workerCounts(u: WeeklyUsage): List<WorkerCount> = FAMILIES.mapNotNull { (id, label) ->
+        val e = u.workers[id] ?: return@mapNotNull null
+        val n = e.count?.let { (if (e.estimate) "~" else "") + fmtCount(it) } ?: "?"
+        WorkerCount(n, label)
+    }
+
+    /** "after 32% reserve": the share the counts already leave to main + sentinels + alfred. */
+    fun reserveNote(u: WeeklyUsage): String = u.reservePercent?.let { "after ${it.roundToInt()}% reserve" } ?: ""
 
     fun fmt1(v: Double): String = String.format(Locale.ENGLISH, "%.1f", v)
 
@@ -148,9 +205,9 @@ object WeeklyDisplay {
             Freshness.FRESH -> "updated $asOf"
         }
         if (parsed == null) {
-            return WeeklyView(freshness, status, "", "", null, "", emptyList(), null, null, null)
+            return WeeklyView(freshness, status, "", "", null, "", emptyList(), emptyList(), "", null)
         }
-        val (pace, over) = paceText(parsed.usedPercent - evenPacePercent(parsed, nowMs))
+        val (pace, over) = paceText(parsed.usedPercent - evenPacePercent(parsed, nowMs), parsed.resetMs - parsed.startMs)
         return WeeklyView(
             freshness = freshness,
             statusLine = status,
@@ -159,8 +216,8 @@ object WeeklyDisplay {
             overPace = over,
             resetText = "resets ${DAY_TIME.format(Instant.ofEpochMilli(parsed.resetMs).atZone(zone))}",
             legend = typeTotals(parsed),
-            opus = parsed.workers["opus"]?.count,
-            sonnet = parsed.workers["sonnet"]?.count,
+            workers = workerCounts(parsed),
+            reserveNote = reserveNote(parsed),
             usage = parsed,
         )
     }

@@ -101,7 +101,7 @@
             android:layout_weight="1"
             android:textColor="#8E9993"
             android:textSize="12sp"
-            android:maxLines="1"
+            android:maxLines="2"
             android:ellipsize="end" />
 
         <TextView
