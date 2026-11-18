@@ -39,8 +39,19 @@ class HeadroomActivity : Activity() {
             text(page, day, 14, BODY)
             points.forEach { p -> capacityRow(page, Row(p.provider, false, p.window, p.remaining, null, "")) }
         }
-        title(page, "Model mix", 20, INK)
-        text(page, "Subscription APIs expose capacity windows, not per-model token history. Headroom can collect exact local CLI-session totals from each paired computer; this panel will show them once those private collectors are connected.", 14, BODY)
+        title(page, "Claude weeks by usage type", 20, INK)
+        val weeks = store.weeklyHistory()
+        if (weeks.isEmpty()) text(page, "Shown once the bridge serves its weekly view.", 14, MUTED)
+        else {
+            val labels = store.weeklyBody?.let { runCatching { parseWeekly(it) }.getOrNull() }
+                ?.types?.associate { it.id to it.label }.orEmpty()
+            val dayFmt = java.time.format.DateTimeFormatter.ofPattern("EEE d MMM HH:mm", java.util.Locale.ENGLISH)
+            weeks.forEach { w ->
+                val reset = java.time.Instant.ofEpochMilli(w.resetMs).atZone(ZoneId.systemDefault())
+                text(page, "Week resetting ${dayFmt.format(reset)}: ${w.usedPercent.toInt()}% used", 14, BODY)
+                text(page, w.byType.entries.joinToString(", ") { (id, v) -> "${labels[id] ?: id} ${WeeklyDisplay.fmt1(v)}%" }, 13, MUTED)
+            }
+        }
     }
 
     private fun capacityRow(parent: LinearLayout, row: Row) {

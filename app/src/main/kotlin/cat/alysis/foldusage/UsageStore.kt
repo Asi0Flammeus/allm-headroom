@@ -92,6 +92,33 @@ class UsageStore(context: Context) {
         prefs.edit().putString(KEY_HISTORY, JSONArray(merged.map { it.toJson() }).toString()).apply()
     }
 
+    /** Raw body of the last `/usage/weekly` 200 that parsed; null if never. */
+    val weeklyBody: String?
+        get() = prefs.getString(KEY_WEEKLY_BODY, null)
+
+    val weeklySuccessAtMs: Long
+        get() = prefs.getLong(KEY_WEEKLY_SUCCESS_AT, 0L)
+
+    /** Non-null iff the MOST RECENT weekly fetch failed. */
+    val weeklyError: String?
+        get() = prefs.getString(KEY_WEEKLY_ERROR, null)
+
+    fun saveWeeklySuccess(body: String, parsed: WeeklyUsage, atMs: Long) {
+        prefs.edit()
+            .putString(KEY_WEEKLY_BODY, body)
+            .putLong(KEY_WEEKLY_SUCCESS_AT, atMs)
+            .remove(KEY_WEEKLY_ERROR)
+            .putString(KEY_WEEKLY_HISTORY, WeeklyHistory.merge(prefs.getString(KEY_WEEKLY_HISTORY, null), parsed))
+            .apply()
+    }
+
+    fun saveWeeklyError(message: String) {
+        prefs.edit().putString(KEY_WEEKLY_ERROR, message).apply()
+    }
+
+    /** Per-window totals seen on this phone, newest first; survives the bridge losing its history. */
+    fun weeklyHistory(): List<WeeklyHistory.Entry> = WeeklyHistory.parse(prefs.getString(KEY_WEEKLY_HISTORY, null))
+
     private companion object {
         const val KEY_URL = "base_url"
         const val KEY_TOKEN = "token"
@@ -102,6 +129,10 @@ class UsageStore(context: Context) {
         const val KEY_ATTEMPT_AT = "last_attempt_at"
         const val KEY_REFRESH_MIN = "refresh_minutes"
         const val KEY_HIDDEN = "hidden"
+        const val KEY_WEEKLY_BODY = "weekly_body"
+        const val KEY_WEEKLY_SUCCESS_AT = "weekly_success_at"
+        const val KEY_WEEKLY_ERROR = "weekly_error"
+        const val KEY_WEEKLY_HISTORY = "weekly_history"
     }
 }
 

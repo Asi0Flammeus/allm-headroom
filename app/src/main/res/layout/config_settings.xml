@@ -227,6 +227,12 @@
             android:layout_height="wrap_content"
             android:text="@string/btn_pin" />
 
+        <Button
+            android:id="@+id/btn_pin_weekly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_pin_weekly" />
+
         <TextView style="@style/Settings.Help" android:text="@string/config_help" />
     </LinearLayout>
 </LinearLayout>
