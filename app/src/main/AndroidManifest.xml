@@ -59,5 +59,15 @@
             android:name=".HeadroomActivity"
             android:exported="false"
             android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
+
+        <!-- Full-screen weekly chart, opened from the weekly widget. Its own task, out of
+             recents: back or Close returns to the home screen, not to the settings. -->
+        <activity
+            android:name=".WeeklyChartActivity"
+            android:exported="false"
+            android:taskAffinity="cat.alysis.foldusage.weeklychart"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar" />
     </application>
 </manifest>

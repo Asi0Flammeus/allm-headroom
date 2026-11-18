@@ -123,8 +123,10 @@ object WeeklyWidgetRenderer {
             v.setImageViewBitmap(R.id.weekly_chart, WeeklyChart.render(u, now, wPx.toInt(), hPx.toInt(), density * scale))
         }
 
-        // Tap: the explanatory app view once paired, the pairing screen before.
-        val target = if (store.isConfigured) Intent(context, HeadroomActivity::class.java)
+        // Tap: the full-screen interactive chart once paired (own task: back returns to the
+        // home screen), the pairing screen before.
+        val target = if (store.isConfigured) Intent(context, WeeklyChartActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         else Intent(context, ConfigActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         v.setOnClickPendingIntent(
             R.id.weekly_root,
@@ -148,23 +150,21 @@ object WeeklyWidgetRenderer {
         return sb
     }
 
-    private fun workers(view: WeeklyView): CharSequence {
+    /** "Left this week: 374 Opus · 1,632 Sonnet · ~101 Fable" ("~": too few workers measured). */
+    fun workers(view: WeeklyView): CharSequence {
         if (view.usage == null) return ""
-        val opus = view.opus
-        val sonnet = view.sonnet
-        if (opus == null && sonnet == null) return "Workers left: not calibrated yet"
-        val sb = SpannableStringBuilder("Left this week  ")
-        fun big(text: String) {
+        if (view.workers.isEmpty() || view.workers.all { it.count == "?" }) return "Workers left: not calibrated yet"
+        val sb = SpannableStringBuilder("Left this week: ")
+        view.workers.forEachIndexed { i, w ->
+            if (i > 0) sb.append(" · ")
             val s = sb.length
-            sb.append(text)
+            sb.append(w.count)
             sb.setSpan(ForegroundColorSpan(INK), s, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             sb.setSpan(RelativeSizeSpan(1.45f), s, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             sb.setSpan(StyleSpan(Typeface.BOLD), s, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sb.append(' ').append(w.label)
         }
-        big(opus?.let { WeeklyDisplay.fmtCount(it) } ?: "?")
-        sb.append(" Opus  or  ")
-        big(sonnet?.let { WeeklyDisplay.fmtCount(it) } ?: "?")
-        sb.append(" Sonnet workers")
+        if (view.reserveNote.isNotEmpty()) sb.append(" · ").append(view.reserveNote)
         return sb
     }
 }

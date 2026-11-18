@@ -5,6 +5,7 @@ import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -74,12 +75,17 @@ class FetchUsageWorker(context: Context, params: WorkerParameters) : Worker(cont
         }
 
         fun refreshNow(context: Context) {
-            val request = OneTimeWorkRequestBuilder<FetchUsageWorker>()
-                .setConstraints(networkConstraints())
-                .build()
             WorkManager.getInstance(context)
-                .enqueueUniqueWork(NOW, ExistingWorkPolicy.REPLACE, request)
+                .enqueueUniqueWork(NOW, ExistingWorkPolicy.REPLACE, refreshNowRequest())
         }
+
+        /**
+         * A user-asked fetch runs at once, without the periodic tick's network constraint:
+         * CONNECTED means a VALIDATED network to JobScheduler, so a bridge reachable on the
+         * tailnet from a network without internet validation was never fetched and the widget
+         * kept its old data silently. Unreachable now is saved as an error ("offline").
+         */
+        fun refreshNowRequest(): OneTimeWorkRequest = OneTimeWorkRequestBuilder<FetchUsageWorker>().build()
 
         fun cancelPeriodic(context: Context) {
             WorkManager.getInstance(context).cancelUniqueWork(PERIODIC)

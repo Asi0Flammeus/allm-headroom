@@ -60,6 +60,10 @@ goes down intermittently; its 5h/week rows stay visible).
 WorkManager periodic fetch every **15 min** by default, 30 min / 1 h / 3 h in
 Settings (network-constrained), plus `updatePeriodMillis=30 min` as system
 backstop, plus **Refresh now** in Settings. Gear icon opens Settings.
+Refresh now (and Save, and a widget being added) fetches at once with no
+network constraint: Android counts CONNECTED only on a validated network, so a
+bridge reachable on the tailnet from a network without internet validation was
+never fetched. An unreachable bridge is shown as `offline`.
 
 ## Settings
 
